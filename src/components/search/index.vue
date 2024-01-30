@@ -1,0 +1,375 @@
+<script setup lang="ts">
+import { ref, reactive } from "vue"
+
+const emit = defineEmits(['setShow']);
+
+const props = defineProps({
+Show: {
+  type: Boolean,
+  default: 'null'
+},
+
+
+
+})
+
+function setShow(){
+      emit('setShow')
+}
+
+let bgList = [
+  '#bc99c4',
+  '#5961F9',
+  '#ff9a9e',
+  '#4C83FF',
+  '#32CCBC',
+  '#00EAFF',
+  '#9F44D3',
+  '#0396FF',
+  '#F067B4',
+  '#FA742B'
+]
+
+let lableList: any = reactive([
+  'html',
+  'css',
+  'javaScript',
+  '前端',
+  '后端',
+  'java',
+  '前端人生',
+  'api',
+  'java',
+  '前端人生',
+  'api'
+])
+lableList = lableList.map(item => {
+
+  let index = Math.floor(Math.random() * bgList.length)
+  let newColor = bgList[index];
+  return {
+    color: newColor,
+    name: item
+  }
+})
+
+</script>
+<template>
+  <Transition>
+
+    <div class="s-modal" v-show="props.Show" @click="setShow"></div>
+  </Transition>
+
+  <Transition name="search">
+  <div class="search-modal" v-show="props.Show">
+
+    <div class="search-content" >
+      <div class="search-left">
+        <div class="search-title">
+          <svg-icon iconName="icon-shouye1" class="sous-icon" color="#000"></svg-icon>
+          <span>关键字搜索</span>
+        </div>
+        <div class="keyword">
+          <input type="text" placeholder="请输入关键字">
+          <div>
+            搜索
+          </div>
+        </div>
+        <div class="search-title">
+          <svg-icon iconName="icon-shouye1" class="sous-icon" color="#000"></svg-icon>
+          <span>搜索记录</span>
+        </div>
+        <div>
+          <ul class="lable-list">
+            <li class="lable-item" v-for="(item, index) in lableList" :key="index">
+              <p :style="{ background: item.color }">{{ item.name }}</p>
+            </li>
+          </ul>
+        </div>
+
+
+      </div>
+      <div class="search-right">
+        <div class="search-title">
+          <svg-icon iconName="icon-shouye1" class="sous-icon" color="#000"></svg-icon>
+          <span>关键字搜索</span>
+        </div>
+        <ul class="hot-list">
+          <li>
+            <p class="hot-left"><span>1</span><span>标题踢踢踢踢踢踢踢踢踢踢踢踢踢踢踢4555555555555555555555555555555555555555</span></p>
+            <p class="hot-right">23<span>阅读</span></p>
+          </li>
+        </ul>
+
+      </div>
+    </div>
+
+
+
+  </div>
+</Transition>
+</template>
+
+
+
+<style scoped lang="scss">
+
+.s-modal{
+  width: 100%;
+  height: 100%;
+  background: rgba($color: #000000, $alpha: 0.8);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  transition: .3s;
+}
+.hot-list {
+  width: 100%;
+  li {
+    display: flex;
+    
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    // box-sizing:border-box;
+    // box-sizing: border-box;
+    
+    .hot-left {
+      display: flex;
+      align-items: center;
+      
+      
+      span:nth-child(2){
+        display: block;
+        // max-width: 10%;
+        width: 400px;
+        white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--routine);
+      font-size: 15px;
+      }
+
+      span:nth-child(1) {
+        display: block;
+        color: #fff;
+        background: #7f7f8c;
+        width: 19px;
+        height: 19px;
+        line-height: 19px;
+        border-radius: 2px;
+        text-align: center;
+        margin-right: 8px;
+        font-size: 14px;
+
+        font-weight: 500;
+      }
+    }
+
+    .hot-right {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--routine);
+      text-align: right;
+    }
+
+  }
+}
+
+.keyword {
+  display: flex;
+
+  input {
+    outline: none;
+    border: none;
+    background: #fff;
+    border-radius: 20px 0 0 20px;
+    padding: 10px 20px;
+    flex: 9;
+  }
+
+  div {
+    flex: 1;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: none;
+    background: var(--theme);
+    color: #fff;
+    border-radius: 0px 20px 20px 0px;
+    letter-spacing: 0.1em;
+    font-size: 14px;
+
+  }
+}
+
+.search-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  
+}
+
+.search-content {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 80px 15% 10px 15%;
+  background: var(--background);
+
+  .search-title {
+    display: flex;
+    align-items: center;
+
+    span {
+      margin-left: 10px;
+    }
+
+    color: var(--main);
+    padding: 15px 0;
+    font-size: 15px;
+  }
+
+  .search-left {
+    flex: 1;
+    margin-right: 20px;
+
+  }
+
+  .search-right {
+  flex: 1;
+  // min-width: 0;
+  }
+}
+
+.lable-list {
+  display: flex;
+  flex-wrap: wrap;
+  // padding: 10px;
+
+  .lable-item {
+    padding: 5px;
+
+    p {
+      color: #fff;
+      padding: 3px 6px 3px 6px;
+      font-size: 13px;
+      border-radius: 2px;
+      transition: .3s;
+      cursor: pointer;
+    }
+
+    p:hover {
+      background: #000 !important;
+      // opacity: 0.8 !important;
+    }
+
+  }
+}
+
+/* ----------------------------------------------
+ * Generated by Animista on 2023-12-6 14:49:45
+ * Licensed under FreeBSD License.
+ * See http://animista.net/license for more info. 
+ * w: http://animista.net, t: @cssanimista
+ * ---------------------------------------------- */
+
+/**
+ * ----------------------------------------
+ * animation slide-in-top
+ * ----------------------------------------
+ */
+ @-webkit-keyframes slide-in-top {
+  0% {
+    -webkit-transform: translateY(-1000px);
+            transform: translateY(-1000px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-top {
+  0% {
+    -webkit-transform: translateY(-1000px);
+            transform: translateY(-1000px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ----------------------------------------------
+ * Generated by Animista on 2023-12-6 14:50:40
+ * Licensed under FreeBSD License.
+ * See http://animista.net/license for more info. 
+ * w: http://animista.net, t: @cssanimista
+ * ---------------------------------------------- */
+
+/**
+ * ----------------------------------------
+ * animation slide-out-top
+ * ----------------------------------------
+ */
+ @-webkit-keyframes slide-out-top {
+  0% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-1000px);
+            transform: translateY(-1000px);
+    opacity: 0;
+  }
+}
+@keyframes slide-out-top {
+  0% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-1000px);
+            transform: translateY(-1000px);
+    opacity: 0;
+  }
+}
+
+
+
+.slide-in-top {
+	-webkit-animation: slide-in-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+	        animation: slide-in-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+.slide-out-top {
+	-webkit-animation: slide-out-top 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+	        animation: slide-out-top 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}
+
+/* // 动画 */
+.search-enter-active {
+  -webkit-animation: slide-in-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+	        animation: slide-in-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+.search-leave-active {
+  -webkit-animation: slide-out-top 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+	        animation: slide-out-top 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}
+
+</style>
