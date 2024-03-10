@@ -1,13 +1,28 @@
 <template>
     <div class="user-name" :class="{ 'name-ani': userani1, 'name-ani2': userani3 }">
         <div class="user-hint" :class="{ 'ani1': userani1, 'ani2': userani3 }">{{ props.title }}</div>
-        <input :type="props.type" class="user-input"  v-model="newuser" @focus="ani1" @blur="ani1" />
+        <input :type="props.type" class="user-input" v-model="newuser" @focus="ani1" @blur="ani1" />
+        <svg-icon iconName="icon-login" color="#000" v-if="props.type == 'password' && newuser != '' && !eye"
+            @click="showEye"></svg-icon>
+        <svg-icon iconName="icon-login" color="#ccc" v-if="props.type == 'password' && newuser != '' && eye"
+            @click="hideEye"></svg-icon>
+
     </div>
 </template>
 
 <script setup lang="ts">
 
-import { ref, reactive, toRefs } from 'vue';
+import { ref, reactive, toRefs,onMounted} from 'vue';
+
+
+
+
+onMounted(()=>{
+const userInput=ref()
+
+console.log(userInput,6666);
+    
+})
 
 const userani1 = ref(false);
 
@@ -22,14 +37,14 @@ const props = defineProps({
         type: String,
         default: null
     },
-    type:{
+    type: {
         type: String,
         default: null
     }
 })
 const newuser = ref(props.contents)
 
-const emit = defineEmits(['getData']);
+const emit = defineEmits(['getData', 'setEye']);
 function ani1() {
     if (newuser.value == '') {
         userani1.value = !userani1.value
@@ -47,22 +62,46 @@ function ani1() {
 
 
 if (newuser.value == '') {
-    userani1.value=false
-    userani3.value=false
+    userani1.value = false
+    userani3.value = false
 } else {
-    userani1.value=true
-    userani3.value=true
+    userani1.value = true
+    userani3.value = true
 }
 
 // const { contents: { newcontents }} = toRefs(props)
 
+//显现密码
+
+let eye = ref(false)
+function showEye() {
+    eye.value = true
+    emit("setEye", true)
+}
+function hideEye() {
+    emit("setEye", false)
+    eye.value = false
+}
+
+
 </script>
 
 <style scoped lang="scss">
+//消除眼睛
+input[type="password"]::-ms-reveal {
+    display: none
+}
+
 .user-name {
     position: relative;
     padding-top: 20px;
     margin-top: 20px;
+
+    .svg-icon {
+        position: absolute;
+        right: 0;
+        top: 20px;
+    }
 
     .user-hint {
         position: absolute;
@@ -122,5 +161,4 @@ if (newuser.value == '') {
 .ani2 {
     opacity: 0.5 !important;
     color: #000 !important;
-}
-</style>
+}</style>

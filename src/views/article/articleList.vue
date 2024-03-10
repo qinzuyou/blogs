@@ -24,8 +24,10 @@ getArticleType().then((res:any)=>{
     console.log(res);
     
 })
-
-
+let typeVal=ref(true)
+if(history.state.data){
+typeVal.value=false
+}
 
 
 </script>
@@ -33,8 +35,8 @@ getArticleType().then((res:any)=>{
   <div>
     <Huge :img="'/images/2.jpg'" :title="'文章列表'"></Huge>
   
-    <div class="article-list">
-      <ul class="classify fade-in-bottom">
+    <div class="article-list" >
+      <ul class="classify " v-if="typeVal">
         <li :class="{'class-active':item.name==atype}"  v-for="(item,index) in classList" :key="index" @click="classCut(index)">
           {{item.name}}
         </li>
@@ -52,13 +54,19 @@ getArticleType().then((res:any)=>{
 <style scoped lang="scss">
 
 .article-list {
-  width: 1340px;
+ max-width: 1340px;
   margin: 0 auto;
-
   margin-top: 20px;
+  padding: 0 20px;
+  @media screen and (max-width: 1024px) {
+          width: 100%;
+          padding: 0 6px;
+
+
+    }
 .classify{
   display: flex;
-  background: #fff;
+  background: var(--main-bg-color);
   box-shadow:  0 8px 16px -4px #2c2d300c;
   border:  0 8px 16px -4px #2c2d300c;
   border-radius:12px;
@@ -71,6 +79,7 @@ getArticleType().then((res:any)=>{
     transition: .3s;
     cursor: pointer;
     border-radius: 8px;
+    color: var(--main-color);
   }
   li:hover{
     color: #fff;
@@ -80,7 +89,7 @@ getArticleType().then((res:any)=>{
 }
 .class-active{
   background: var(--theme-color);
-  color: #fff;
+  color: #fff !important;
  
 }
 

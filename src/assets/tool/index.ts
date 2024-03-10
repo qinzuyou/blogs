@@ -74,13 +74,22 @@ const DateFormatPipe = (date: Date, type: String) => {
         timeDate = year + '-' + month + '-' + day + ' ' + HH + ':' + mm + ':' + ss;
         break;
       case 'yyyy年MM月dd日HH:mm:ss':
-        timeDate = year + '年' + month + '月' + day +'日'+ ' ' + HH + ':' + mm + ':' + ss;
+        timeDate = year + '年' + month + '月' + day + '日' + ' ' + HH + ':' + mm + ':' + ss;
         break;
       case 'HH:mm:ss':
         timeDate = HH + ':' + mm + ':' + ss;
         break;
       case 'MM':
         timeDate = String(month);
+        break;
+      case 'YY':
+        timeDate = String(year);
+        break;
+      case 'DD':
+        timeDate = String(day);
+        break;
+      case 'HH':
+        timeDate = String(HH);
         break;
       default:
         timeDate = year + '-' + month + '-' + day;

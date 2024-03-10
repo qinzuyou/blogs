@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from "vue-router";
 import { reactive, ref, render } from 'vue'
-import { typeArticle,searchArticle,labelArticle,uidArticle} from '@/utils/article'
+import { typeArticle,searchArticle,labelArticle,uidArticle,getArticleType} from '@/utils/article'
 import Tool from '@/assets/tool/index'
-
+import Huge from '@/components/hugescreen/index.vue'
 
 const props = defineProps({
   type: {
@@ -16,19 +16,18 @@ const props = defineProps({
 })
 
 
-let atype = useRoute().params.type
+let atype = useRoute().params.val
 
+
+let uId = useRoute().params.uid
 
 let valType=ref("")
 
-if(history.state.data=="search"){
-  valType.value="search"
-}else if (history.state.data=="type"){
-  valType.value="type"
-}else if(history.state.data=="user"){
-  valType.value="user"
-}
-console.log(atype,useRoute(),history.state.data,valType.value);
+//文章类型
+const classActive=ref(0)
+const classList=reactive([{id:0,name:"全部"}])
+const articleType=ref("")
+
 
 
 
@@ -37,64 +36,8 @@ const pages = ref(1)
 const size = ref(8)
 const total = ref()
 
-if(valType.value=="search"){
-  updateArticleVal()
-}else if(valType.value=="type"){
-  labelArticleVal()
-}else if(valType.value=="user"){
-  uidArticleVal()
-}else{
-  updateArticle()
-}
+updateArticleVal()
 
-//根据文章类型查询文章
-function updateArticle() {
-  if(atype=="全部") atype=''
-  typeArticle(pages.value, size.value, atype).then((res: any) => {
-    console.log(res.records);
-    total.value = res.total / size.value
-    res.records = res.records.map((item: any) => {
-      item.typeList = JSON.parse(item.typeList)
-      item.labelList=JSON.parse(item.labelList)
-      item.createTime = Tool.diaplayTime(item.createTime)
-
-
-      // item.typeList = item.typeList.map((item2: any) => {
-
-      //   let random = Math.random() * Tool.rgbaList.length
-      //   return {
-      //     name: item2,
-      //     color: Tool.rgbaList[Math.floor(random)].color,
-      //     bg: Tool.rgbaList[Math.floor(random)].bg
-      //   }
-      // })
-      let random = Math.random() * Tool.rgbaList.length
-      item.typeName={
-        name:item.typeName,
-        color: Tool.rgbaList[Math.floor(random)].color,
-          bg: Tool.rgbaList[Math.floor(random)].bg
-      }
-
-      return {
-        ...item,
-        portrait: Tool.baseImg + item.portrait,
-        cover: Tool.baseURL+"/api" + item.cover
-      }
-    })
-    // articleList.push(0)
-
-    articleList.splice(0)
-    articleList.push(...res.records)
-
-    loading.value=false
-
-    if(articleList.length==0) nullLoading.value=true
-
-   
-    // console.log(res.records, 11, articleList);
-
-  })
-}
 
 //模糊搜索文章
 function updateArticleVal() {
@@ -143,111 +86,16 @@ function updateArticleVal() {
   })
 }
 
-//根据标签查询文章
-function labelArticleVal() {
-  labelArticle(pages.value, size.value, atype).then((res: any) => {
-    console.log(res.records);
-    total.value = res.total / size.value
-    res.records = res.records.map((item: any) => {
-      item.typeList = JSON.parse(item.typeList)
-      item.labelList=JSON.parse(item.labelList)
-      item.createTime = Tool.diaplayTime(item.createTime)
 
 
-      // item.typeList = item.typeList.map((item2: any) => {
 
-      //   let random = Math.random() * Tool.rgbaList.length
-      //   return {
-      //     name: item2,
-      //     color: Tool.rgbaList[Math.floor(random)].color,
-      //     bg: Tool.rgbaList[Math.floor(random)].bg
-      //   }
-      // })
-      let random = Math.random() * Tool.rgbaList.length
-      item.typeName={
-        name:item.typeName,
-        color: Tool.rgbaList[Math.floor(random)].color,
-          bg: Tool.rgbaList[Math.floor(random)].bg
-      }
-
-      return {
-        ...item,
-        portrait: Tool.baseImg + item.portrait,
-        cover: Tool.baseURL+"/api" + item.cover
-      }
-    })
-    // articleList.push(0)
-
-    articleList.splice(0)
-    articleList.push(...res.records)
-
-    loading.value=false
-    if(articleList.length==0) nullLoading.value=true
-
-
-    console.log(res.records, 11, articleList);
-
-  })
-}
-
-//根据用户id查询文章
-function uidArticleVal() {
-  uidArticle(pages.value, size.value, useRoute().params.uid).then((res: any) => {
-    console.log(res.records,'威威威威');
-    total.value = res.total / size.value
-    res.records = res.records.map((item: any) => {
-      item.typeList = JSON.parse(item.typeList)
-      item.labelList=JSON.parse(item.labelList)
-      item.createTime = Tool.diaplayTime(item.createTime)
-
-
-      // item.typeList = item.typeList.map((item2: any) => {
-
-      //   let random = Math.random() * Tool.rgbaList.length
-      //   return {
-      //     name: item2,
-      //     color: Tool.rgbaList[Math.floor(random)].color,
-      //     bg: Tool.rgbaList[Math.floor(random)].bg
-      //   }
-      // })
-      let random = Math.random() * Tool.rgbaList.length
-      item.typeName={
-        name:item.typeName,
-        color: Tool.rgbaList[Math.floor(random)].color,
-          bg: Tool.rgbaList[Math.floor(random)].bg
-      }
-
-      return {
-        ...item,
-        portrait: Tool.baseImg + item.portrait,
-        cover: Tool.baseURL+"/api" + item.cover
-      }
-    })
-    // articleList.push(0)
-
-    articleList.splice(0)
-    articleList.push(...res.records)
-
-    loading.value=false
-    if(articleList.length==0) nullLoading.value=true
-
-
-    console.log(res.records, 11, articleList);
-
-  })
-}
 
 
 function pchange(e: any) {
   pages.value = e
-  if(valType.value){
-    updateArticleVal()
-  }else{
-    updateArticle()
-  }
+  updateArticleVal()
 
-  
-  console.log(e, total.value, pages.value);
+ 
 
 }
 
@@ -261,9 +109,36 @@ let nullLoading=ref(false)
 
 let loading=ref(true)
 
+
+getArticleType().then((res:any)=>{
+    classList.push(...res)
+    console.log(res);
+    
+})
+
+
+// function classCut(index:any){
+//   classActive.value=index
+//   articleType.value=classList[index].name
+//   uidArticleVal()
+//   // router.push(`/articleList/${articleType.value}/`)
+//   // console.log(articleType.value);
+  
+// }
+
 </script>
 <template>
+  <div>
+     <Huge :img="'/public/images/2.jpg'" :title="'文档'"></Huge>
   <div class="article-list-box">
+
+    <!-- <ul class="classify" v-if="false">
+        <li :class="{'class-active':classActive==index}"  v-for="(item,index) in classList" :key="index" @click="classCut(index)">
+          {{item.name}}
+        </li>
+      </ul> -->
+  
+
 
     <transition mode="out-in" name="item-in2">
     <ul class="article-l-content" v-if="articleList.length !=0">
@@ -370,11 +245,48 @@ let loading=ref(true)
       <el-pagination background layout="prev, pager, next" :total="total * 10" @current-change="pchange" />
     </div>
   </div>
+  </div>
+   
 </template>
 
 
 
 <style lang="scss" scoped>
+.article-list-box{
+  max-width: 1340px;
+  padding: 10px;
+  margin: 0 auto;
+}
+.classify{
+  display: flex;
+  background: var(--main-bg-color);
+  box-shadow:  0 8px 16px -4px #2c2d300c;
+  border:  0 8px 16px -4px #2c2d300c;
+  border-radius:12px;
+  padding: 20px;
+
+  
+  li{
+    padding: 8px  12px;
+    margin-right: 10px;
+    transition: .3s;
+    cursor: pointer;
+    border-radius: 8px;
+    color: var(--main-color);
+  }
+  li:hover{
+    color: #fff;
+   background: var(--theme-color);
+
+  }
+}
+.class-active{
+  background: var(--theme-color);
+  color: #fff !important;
+ 
+}
+
+
 .loadingList{
   width: 100%;
   height: fit-content;

@@ -1,5 +1,34 @@
 
 <script setup lang="ts">
+import { typeWallpaper,oneWallpaper} from "@/utils/wallpaper.ts"
+import { reactive,ref } from "vue";
+import tool from "@/assets/tool/index.ts"
+const wallpaperList=reactive([
+
+])
+
+const wallpaper = ref("")
+oneWallpaper().then((res:any)=>{
+  res.cover=tool.baseURL+"/api"+ res.cover
+  wallpaper.value=res.cover
+})
+
+
+// typeWallpaper(1,100,null).then((res:any)=>{
+//   res=res.records.map((item:any)=>{
+//       item.cover=tool.baseURL+"/api"+ item.cover
+//     return {
+//       ...item
+//     }
+//   })
+//     console.log(res,"壁纸");
+
+// let sjs=Math.floor(Math.random() * res.length);
+
+
+// wallpaper.value=res[sjs].cover
+    
+// })
 const props = defineProps({
   title: {
     type: String,
@@ -17,7 +46,7 @@ console.log(props);
 </script>
 
 <template>
-  <div class="huge" :style="{ backgroundImage: 'url(' + img + ')' }">
+  <div class="huge" :style="{ backgroundImage: 'url(' + wallpaper + ')' }">
 
 
     <p>{{ title }}</p>

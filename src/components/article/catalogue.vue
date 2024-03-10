@@ -1,11 +1,4 @@
 <template>
-    <div class="test">
-         <div>
-             <h1>456451</h1>
-            <h3>5656</h3>
-            <h2>15615</h2>
-         </div>  
-    </div>
     <div class="catalog-card" v-if="Object.keys(titles).length > 0">
         <div class="catalog-card-header">
             <div>
@@ -33,13 +26,13 @@
 </template>
 
 <script >
-import { reactive, ref,onMounted} from "vue";
-
+import { reactive, ref,onMounted,onBeforeMount} from "vue";
+import { ElMessage } from 'element-plus'
 export default {
   name: "KilaKilaCatalog",
   setup(props) {
 
-
+console.log("开始",document.querySelector("#w-e-textarea-1"));
     // onMounted(()=>{
     //   titles.push(getTitles())
 
@@ -48,27 +41,33 @@ export default {
       let currentTitle = reactive({});
       let progress = ref(0);
       onMounted(()=>{
-      
-          titles.push(...getTitles());
+    if(props.container){
+        setTimeout(()=>{
+    
+        titles.push(...getTitles());
           console.log(getTitles(),66);
           console.log(titles,'ti');
+      },100)
+        }else{
+            ElMessage.Error("获取目录失败")
+        }     
           })
       console.log(props,'pro');
       // 获取目录的标题
-  function getTitles() {
+ function getTitles() {
           let titles = [] ;
           let levels = ["h1", "h2", "h3"];
 
+        //   let articleElement = document.querySelector(".test");
           let articleElement = document.querySelector(props.container);
-          let articleElement2 = document.querySelector(props.container);
-            console.log(articleElement,'555',props.container,document.querySelector(props.container),articleElement2);
+           
           if (!articleElement) {
-         console.log("失败了");
+     
               return titles;
           }
 
-          let elements = Array.from(articleElement.querySelectorAll("*"));
-
+        let elements = Array.from(articleElement.querySelectorAll("*"));
+     
           // 调整标签等级
           let tagNames = new Set(
               elements.map((el) => el.tagName.toLowerCase())
@@ -141,11 +140,17 @@ export default {
 
       // 监听滚动事件并更新样式
       window.addEventListener("scroll", function () {
+        let conHeight = document.querySelector(props.container).offsetHeight
           progress.value =
               parseInt(
-                  (window.scrollY / document.documentElement.scrollHeight) *
+                  (window.scrollY / conHeight) *
                       100
               ) + "%";
+
+              if(((window.scrollY / conHeight) *
+                      100)>=100){
+                progress.value="100%"
+              }
 
           let visibleTitles = [];
 
@@ -192,7 +197,7 @@ export default {
           window.scrollTo({ top: scrollTop, behavior: "smooth" });
       }
 
-      return { titles, currentTitle, progress, scrollToView };
+      return { titles, currentTitle, progress, scrollToView,getTitles };
   },
   props: {
       container: {

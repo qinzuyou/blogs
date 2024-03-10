@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from "vue-router";
 import { reactive, ref, render } from 'vue'
-import { typeArticle,searchArticle,labelArticle,uidArticle} from '@/utils/article'
+import { typeArticle,searchArticle,labelArticle,uidArticle,getArticleType} from '@/utils/article'
 import Tool from '@/assets/tool/index'
 
 
@@ -19,16 +19,15 @@ const props = defineProps({
 let atype = useRoute().params.type
 
 
+let uId = useRoute().params.uid
+
 let valType=ref("")
 
-if(history.state.data=="search"){
-  valType.value="search"
-}else if (history.state.data=="type"){
-  valType.value="type"
-}else if(history.state.data=="user"){
-  valType.value="user"
-}
-console.log(atype,useRoute(),history.state.data,valType.value);
+//文章类型
+const classActive=ref(0)
+const classList=reactive([{id:0,name:"全部"}])
+const articleType=ref("")
+
 
 
 
@@ -37,15 +36,7 @@ const pages = ref(1)
 const size = ref(8)
 const total = ref()
 
-if(valType.value=="search"){
-  updateArticleVal()
-}else if(valType.value=="type"){
-  labelArticleVal()
-}else if(valType.value=="user"){
-  uidArticleVal()
-}else{
-  updateArticle()
-}
+uidArticleVal()
 
 //根据文章类型查询文章
 function updateArticle() {
@@ -192,7 +183,8 @@ function labelArticleVal() {
 
 //根据用户id查询文章
 function uidArticleVal() {
-  uidArticle(pages.value, size.value, useRoute().params.uid).then((res: any) => {
+  if (articleType.value=="全部") articleType.value=""
+  uidArticle(pages.value, size.value, uId,articleType.value).then((res: any) => {
     console.log(res.records,'威威威威');
     total.value = res.total / size.value
     res.records = res.records.map((item: any) => {
@@ -225,13 +217,11 @@ function uidArticleVal() {
     })
     // articleList.push(0)
 
-    articleList.splice(0)
+    articleList.splice(0) 
     articleList.push(...res.records)
 
-    loading.value=false
+
     if(articleList.length==0) nullLoading.value=true
-
-
     console.log(res.records, 11, articleList);
 
   })
@@ -240,11 +230,7 @@ function uidArticleVal() {
 
 function pchange(e: any) {
   pages.value = e
-  if(valType.value){
-    updateArticleVal()
-  }else{
-    updateArticle()
-  }
+  uidArticleVal()
 
   
   console.log(e, total.value, pages.value);
@@ -261,9 +247,32 @@ let nullLoading=ref(false)
 
 let loading=ref(true)
 
+
+getArticleType().then((res:any)=>{
+    classList.push(...res)
+    console.log(res);
+    
+})
+
+
+function classCut(index:any){
+  classActive.value=index
+  articleType.value=classList[index].name
+  uidArticleVal()
+  // router.push(`/articleList/${articleType.value}/`)
+  // console.log(articleType.value);
+  
+}
+
 </script>
 <template>
   <div class="article-list-box">
+
+    <ul class="classify" >
+        <li :class="{'class-active':classActive==index}"  v-for="(item,index) in classList" :key="index" @click="classCut(index)">
+          {{item.name}}
+        </li>
+      </ul>
 
     <transition mode="out-in" name="item-in2">
     <ul class="article-l-content" v-if="articleList.length !=0">
@@ -375,6 +384,37 @@ let loading=ref(true)
 
 
 <style lang="scss" scoped>
+
+.classify{
+  display: flex;
+  background: var(--main-bg-color);
+  box-shadow:  0 8px 16px -4px #2c2d300c;
+  border:  0 8px 16px -4px #2c2d300c;
+  border-radius:12px;
+  padding: 20px;
+
+  
+  li{
+    padding: 8px  12px;
+    margin-right: 10px;
+    transition: .3s;
+    cursor: pointer;
+    border-radius: 8px;
+    color: var(--main-color);
+  }
+  li:hover{
+    color: #fff;
+   background: var(--theme-color);
+
+  }
+}
+.class-active{
+  background: var(--theme-color);
+  color: #fff !important;
+ 
+}
+
+
 .loadingList{
   width: 100%;
   height: fit-content;

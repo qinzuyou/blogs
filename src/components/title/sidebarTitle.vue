@@ -37,7 +37,7 @@ const props = defineProps({
 
 <style scoped lang="scss">
 .pt-top {
-  background-color: #fff;
+  background-color: var(--main-bg-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,12 +47,15 @@ const props = defineProps({
   line-height: 45px;
   padding: 0 15px;
   border-bottom: 1px solid var(--classC);
+  transition: .3s;
 
 }
 
 .pt-left {
   display: flex;
   align-items: center;
+  color: var(--main-color);
+  transition: .3s;
 
   .svg-icon {
     margin-right: 4px;

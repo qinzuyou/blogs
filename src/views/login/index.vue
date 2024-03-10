@@ -124,7 +124,7 @@ async function loginsubmit() {
           hintno()
         } else {
 
-            res.portrait=Tool.baseImg+ res.portrait
+            res.portrait=Tool.baseURL+'/api'+ res.portrait
 
 
 
@@ -183,8 +183,9 @@ async function loginsubmit() {
             account:sshData.user
           }
 
-          logingUser(data).then((res)=>{
+          logingUser(data).then((res:any)=>{
             // console.log(res);
+            res.portrait = Tool.baseURL+"/api"+ res.portrait
           store.useradd(res)
 
           regtitle.value = "登录成功!"
@@ -813,6 +814,7 @@ let sshCut = function () {
   position: relative;
   z-index: 10;
   padding-top: 60px;
+  height: 100vh;
 }
 
 .out {
@@ -829,13 +831,14 @@ let sshCut = function () {
 
 .login-content {
   // background: var(--header-bg);
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--login-bg);
   backdrop-filter: blur(2px);
   color: var(--nav-color);
   transition: .3s;
   margin: 0 auto;
-  margin-top: 50px;
+  margin-top: 20px;
   width: 350px;
+ 
   padding: 15px;
   box-shadow: 0 0 10px var(--main-shadow);
   border-radius: var(--main-radius);
@@ -897,7 +900,7 @@ let sshCut = function () {
       height: 100%;
       width: 100%;
       border: none;
-      transition: all 0.6s;
+      // transition: all 0.3s;
       border-bottom: 0px;
       border-bottom: 1px solid rgba($color: #000000, $alpha: 0.2);
       padding: 6px 0;
@@ -906,7 +909,7 @@ let sshCut = function () {
 
   }
 
-  .user-password {}
+
 
   .user-name::before {
     position: absolute;
@@ -999,7 +1002,7 @@ let sshCut = function () {
   .reme-ssh {
     span {
       cursor: pointer;
-      transition: .3s;
+      // transition: .3s;
 
     }
 

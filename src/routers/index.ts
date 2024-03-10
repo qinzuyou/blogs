@@ -1,16 +1,22 @@
-import AboutVue from "@/views/About.vue"
-import HomeVue from "@/views/Home.vue"
-import { RouteRecordRaw, createRouter, createWebHashHistory,createWebHistory} from "vue-router"
 
+import { RouteRecordRaw, createRouter, createWebHashHistory,createWebHistory} from "vue-router"
+import {useGlobalStore} from "@/stores/index"
+import { ElMessage  } from 'element-plus'
+import { defineAsyncComponent } from 'vue'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 // 每个路由都需要映射到一个组件。
 const routes:RouteRecordRaw[]= [
   { 
     path: '/', 
     name:'home',
-    component:()=>import('@/views/home/index.vue'),
+    // component:()=>import('@/views/home/index.vue'),
+    // component:resolve => require(['/views/home/index.vue'],resolve),
+    component: defineAsyncComponent(() => import('@/views/home/index.vue')),
     meta:{
       title:'首页',
-      show:true
+      show:true,
+      icon:'icon-shouye1'
     },
 
 
@@ -34,39 +40,61 @@ const routes:RouteRecordRaw[]= [
   meta:{
     title:'文章列表',
     show:true,
-    name:"全部"
-
+    name:"全部",
+    icon:'icon-wenjianjia1'
   }
 
 },
+
+
 { 
-  path: '/document', 
-  name:'document',
-  component:()=>import('@/views/document/index.vue'),
+  path: '/pigeonhole', 
+  name:'pigeonhole',
+  component:()=>import('@/views/pigeonhole/index.vue'),
   meta:{
-    title:'文档列表',
-    show:true
+    title:'文章类型',
+    show:true,
+    icon:'icon-fenlei'
+
 
   },
+  // path: '/classifications/:type/', 
+  // name:'classifications',
+  // component:()=>import('@/views/classifications/classifications.vue'),
+  // meta:{
+  //   title:'全部分类',
+  //   show:true
+
+  // },
 
 
   children:[
-    {
-      path:"/document1",
-      name:"document1",
-      component:()=>import('@/views/document/index.vue'),
+    // {
+    //   path:"",
+    
+    //   component:()=>import('@/views/pigeonhole/classH.vue'),
 
+    //   meta:{
+    //     title:'全部分类22'
+    //   }
+    // },
+    {
+      path:"/classifications/:type/",
+      name:"classifications",
+      component:()=>import('@/views/classifications/classifications.vue'),
+      props: true,
       meta:{
-        title:'首页'
+        title:'全部分类',
+    icon:'icon-fenlei1'
       }
     },
     {
-      path:"/document2",
-      name:"document2",
-      component:()=>import('@/views/document/index.vue'),
+      path:"/tags/:type/",
+      name:"tags",
+      component:()=>import('@/views/classifications/tags.vue'),
 
       meta:{
-        title:'首页',
+        title:'全部标签',
       }
     }
   ]
@@ -88,7 +116,75 @@ const routes:RouteRecordRaw[]= [
   component:()=>import('@/views/article/articleEdit.vue'),
   meta:{
     title:'文章编辑页',
-    show:true
+    show:true,
+    icon:"icon-tubiaozhizuomoban-"
+    
+  },
+  //进入页面前
+  beforeEnter: (to, form, next) => {
+    const store = useGlobalStore()
+    if (!store.user) {
+        ElMessage.error('请先登录!')
+        router.push('/login')
+        // if (to.name == "login") {
+        //     next();
+        // } else {
+        //     router.push('login')
+        // }
+    } else {
+        next();
+    }
+}
+},
+{ 
+  path: '/wallpaper', 
+  name:'wallpaper',
+  component:()=>import('@/views/wallpaper/index.vue'),
+  meta:{
+    title:'康康壁纸',
+    show:true,
+    icon:"icon-tupian"
+
+
+  }
+
+},
+
+{
+  path:"/UplodaWallpaper",
+  name:"UplodaWallpaper",
+  component:()=>import('@/views/wallpaper/uplodaWallpaper.vue'),
+  meta:{
+    title:'壁纸上传',
+    show:true,
+    icon:"icon-shangchuanlan"
+
+  },
+    //进入页面前
+    beforeEnter: (to, form, next) => {
+      const store = useGlobalStore()
+      if (!store.user) {
+          ElMessage.error('请先登录!')
+          router.push('/login')
+          // if (to.name == "login") {
+          //     next();
+          // } else {
+          //     router.push('login')
+          // }
+      } else {
+          next();
+      }
+  }
+},
+{
+  path:"/stats",
+  name:"stats",
+  component:()=>import('@/views/article/stats.vue'),
+  meta:{
+    title:'网站统计',
+    show:true,
+    icon:"icon-tongji1"
+
   }
 },
 {
@@ -97,7 +193,41 @@ const routes:RouteRecordRaw[]= [
   component:()=>import('@/views/login/index.vue'),
   meta:{
     title:'登录',
-    show:true
+    show:false
+  }
+},
+{ 
+  path: '/personal/:uid/', 
+  name:'personal',
+  component:()=>import('@/views/user/personal.vue'),
+  meta:{
+    title:'个人中心',
+    show:false,
+    name:"个人中心"
+
+  }
+
+},
+{ 
+  path: '/search/:val/', 
+  name:'search',
+  component:()=>import('@/views/article/search.vue'),
+  meta:{
+    title:'搜索',
+    show:false,
+    name:"搜索"
+
+  }
+
+},
+{
+  path:'/:pathMatch(.*)*',
+  name:'page404',
+  component:()=>import('@/views/page404/404.vue'),
+  meta:{
+    title:'404',
+    show:false,
+    name:'404'
   }
 }
  
@@ -124,6 +254,24 @@ const router = createRouter({
       return { top: 0 }
   }
 })
+
+router.beforeEach((to, from, next) => {
+  NProgress.start() // 进度条开始
+  next()
+})
+ 
+router.afterEach(() => {
+  NProgress.done() // 进度条结束
+})
+
+NProgress.configure({
+  easing: 'ease', // 动画方式
+  speed: 500, // 递增进度条的速度
+  showSpinner: false, // 是否显示加载 icon
+  trickleSpeed: 200, // 自动递增间隔
+  minimum: 0.3 // 初始化时的最小百分比
+})
+
 
 // export default router
 export {router}

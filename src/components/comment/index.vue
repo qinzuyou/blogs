@@ -2,16 +2,41 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { Ref, nextTick, reactive, ref, onMounted, onBeforeMount, toRaw } from 'vue';
+import { Ref, nextTick, reactive, ref, onMounted, onBeforeMount, toRaw, inject } from 'vue';
 import Tool from "@/assets/tool/index"
 import { fi } from 'element-plus/es/locale/index.mjs';
 import { useRouter, useRoute } from "vue-router";
 import { addComment } from "@/utils/article"
 
+import { useGlobalStore } from "@/stores/index"
+
+// const props = defineProps({
+//   uid:{
+//     type:Number,
+//     default:0
+//   }
+// })
+
+const store = useGlobalStore()
+
+const user: any = ref({})
+
+const uId: any = ref("")
+if (store.user.uid) {
+  uId.value = store.user.uid
+  user.value = store.user
+}
+
+
+// console.log(inject("getComment", 55555), 'comment');
 
 
 
 const props = defineProps({
+  uid: {
+    type: Number,
+    default: ""
+  },
   type: {
     type: String,
     default: 'null'
@@ -20,12 +45,22 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  cid: {
-    type: Number,
-    default: null
+  relevanceId: {
+    type: String,
+    default: ""
+  },
+  replyId: {
+    type: String,
+    default: ""
+  },
+  nickname: {
+    type: String,
+    defaule: null
   }
 })
-const emit = defineEmits(['setShow','updateComment']);
+const emit = defineEmits(['setShow', 'updateComment', 'updateCount']);
+
+console.log(emit('updateComment'), 'emit2');
 
 //文章id
 let aId: any = useRoute().params.id
@@ -256,13 +291,22 @@ onBeforeMount(() => {
 })
 
 
+
+
 let userQQ: any = ref({
   avatar: '',
   email: '',
   name: '',
   qq: '',
-  url: '',
+  website:''
 })
+
+if (store.emailUser) {
+  userQQ.value.avatar = store.emailUser.avatar
+  userQQ.value.qq = store.emailUser.name
+  userQQ.value.name = store.emailUser.qq
+  userQQ.value.email = store.emailUser.email
+}
 
 let labelCut = ref(false)
 let labelCut2 = ref(false)
@@ -290,27 +334,50 @@ function getQQ() {
   var n = Number(userQQ.value.qq);
   // console.log(n, userQQ.value.qq);
 
-  if (!isNaN(n) && userQQ.value.qq != '') {
+  if (userQQ.value.qq == '') {
+    ElMessage.success(`qq不能为空！`)
+
+  }
+  // else if (isNaN(n)) {
+  //   ElMessage.success(`请输入正确qq号！`)
+
+  // }
+
+  // else if (userQQ.value.qq.length < 5) {
+  //   ElMessage.success(`qq号不能少于5位数！`)
+  // }
+
+  else {
+    // userQQ.value.qq = ""
+    // userQQ.value.avatar = ""
+    // userQQ.value.email = ""
+    // ElMessage.error(`请输入qq数字`)
     //获取qq信息
     axios.get(`https:/api.usuuu.com/qq/${userQQ.value.qq}`).then((res: any) => {
-      // console.log(res, 1111);
+      console.log(res, 1111);
+
       userQQ.value.avatar = res.data.data.avatar
       userQQ.value.email = res.data.data.email
       userQQ.value.name = userQQ.value.qq
+
+      let qq = res.data.data.qq
       if (res.data.data.name == '') {
         userQQ.value.qq = '昵称为空！'
       } else {
         userQQ.value.qq = res.data.data.name
 
       }
-
+      let data = {
+        avatar: userQQ.value.avatar,
+        email: userQQ.value.email,
+        name: userQQ.value.qq,
+        qq: qq
+      }
+      store.setEmail(data)
       ElMessage.success(`qq信息获取成功`)
+
+
     })
-  } else {
-    userQQ.value.qq = ""
-    userQQ.value.avatar = ""
-    userQQ.value.email = ""
-    // ElMessage.error(`请输入qq数字`)
 
   }
 
@@ -361,7 +428,7 @@ function upImg(e: any) {
       }
       upImgList.push(img)
       upImgFile.push(file)
-      console.log(upImgList, upImgFile);
+      // console.log(upImgList, upImgFile);
     }
 
   }
@@ -391,7 +458,7 @@ function deleteImg(index: any) {
 
 
 //地址
-let siteData = ref({
+let siteData: any = ref({
   system: Tool.getUserOsInfo(),
   browser: Tool.getBrowserType(),
   city: "",
@@ -404,15 +471,26 @@ let siteData = ref({
 })
 
 
+//发表成功后清空内容
+
+function clear() {
+  inputRef.value.value = ""
+
+  upImgFile.splice(0)
+
+  upImgList.splice(0)
+
+}
+
 
 
 //发表评论
 async function Comment() {
 
-  if (inputRef.value.value == '') {
+  if (inputRef.value.value == "") {
     ElMessage.error("评论不能为空！")
     return
-  } else if (userQQ.value.qq == "") {
+  } else if (userQQ.value.qq == ""&&uId.value=="") {
     ElMessage.error("qq不能为空！")
     return
   } else {
@@ -435,15 +513,35 @@ async function Comment() {
     let data = new FormData()
 
     let imglist: any = []
+
+    if (uId.value) {
+      data.append("uId", uId.value)
+      data.append("nickname", user.value.nickname)
+      let qq = user.value.account.slice(0, user.value.account.length - 7)
+      data.append("qq", qq)
+      data.append("email", user.value.account)
+      let portrait = user.value.portrait.slice(23, user.value.portrait.length)
+      data.append("portrait", portrait)
+      data.append("website",user.value.website)
+      
+
+    } else {
+      data.append("nickname", userQQ.value.qq)
+      data.append("qq", userQQ.value.name)
+      data.append("email", userQQ.value.email)
+      data.append("avatar", userQQ.value.avatar)
+      data.append("website",userQQ.value.website)
+
+    }
+
     data.append("aId", aId)
     data.append("content", inputRef.value.value)
 
 
 
-    data.append("nickname", userQQ.value.qq)
-    data.append("qq", userQQ.value.name)
-    data.append("email", userQQ.value.email)
-    data.append("avatar", userQQ.value.avatar)
+
+    data.append("relevanceId", props.relevanceId)
+    data.append("replyId", props.replyId)
 
 
     let info = JSON.stringify(siteData.value)
@@ -462,8 +560,11 @@ async function Comment() {
 
     await addComment(data).then((res: any) => {
       console.log(res);
+
       ElMessage.success("发表成功！")
+      clear()
       emit('updateComment')
+      emit('updateCount')
 
     })
 
@@ -477,17 +578,80 @@ async function Comment() {
 
 </script>
 <template>
-  <div class="comment-user article-shadow">
-    <div class="com-user">
-      
-        <div class="com-user-img">
-          <transition mode="out-in">
-          <img v-if="userQQ.avatar == ''" src="@/assets/images/qqtx.png" alt="">
-          <img v-else :src="userQQ.avatar" alt="">
-           </transition>
+  <div class="comment-user article-shadow" :class="{ 'dark': props.button }">
+    <div class="reply" v-if="props.nickname">@{{ props.nickname }}{{ props.relevanceId }}</div>
+
+    <div class="com-user" v-if="uId">
+
+      <div class="com-user-img">
+        <transition mode="out-in">
+          <img v-if="user.portrait == ''" src="@/assets/images/qqtx.png" alt="">
+          <img v-else :src="user.portrait" alt="">
+        </transition>
+        <div class="identity">
+          <div v-if="uId && uId != props.uid">普通用户</div>
+          <div v-else-if="uId == props.uid">博主</div>
+          <div v-else>游客</div>
         </div>
 
-     
+      </div>
+
+
+      <ul>
+        <li>
+          <Transition name="card">
+            <div class="user-hint" v-show="labelCut">
+              <div>输入qq会自动获取</div>
+            </div>
+          </Transition>
+          <div class="label-name">
+            昵称
+          </div>
+          <div class="label-user">{{ user.nickname }}</div>
+        </li>
+        <li>
+          <Transition name="card">
+            <div class="user-hint" v-show="labelCut2">
+              <div>您将收到邮件回复通知</div>
+            </div>
+          </Transition>
+          <div class="label-name">
+            邮箱
+          </div>
+
+          <div class="label-user">{{ user.account }}</div>
+
+        </li>
+        <li>
+          <Transition name="card">
+            <div class="user-hint" v-show="labelCut3">
+              <div>通过您的昵称可以访问您的网址</div>
+            </div>
+          </Transition>
+          <div class="label-name">
+            网址
+          </div>
+
+          <div class="label-user">{{ user.wbsite }}</div>
+        </li>
+      </ul>
+    </div>
+    <div class="com-user" v-else>
+
+      <div class="com-user-img">
+        <transition mode="out-in">
+          <img v-if="userQQ.avatar == ''" src="@/assets/images/qqtx.png" alt="">
+          <img v-else :src="userQQ.avatar" alt="">
+        </transition>
+        <div class="identity">
+          <div v-if="uId && uId != props.uid">普通用户</div>
+          <div v-else-if="uId == props.uid">博主</div>
+          <div v-else>游客</div>
+        </div>
+
+      </div>
+
+
       <ul>
         <li>
           <Transition name="card">
@@ -520,7 +684,7 @@ async function Comment() {
           <div class="label-name">
             网址
           </div>
-          <input type="text" @blur="labelCuts3()" @focus="labelCuts3()">
+          <input type="text" @blur="labelCuts3()" @focus="labelCuts3()" v-model="userQQ.website">
         </li>
       </ul>
     </div>
@@ -529,11 +693,16 @@ async function Comment() {
       <textarea name="" ref="inputRef" class="comment-text" placeholder="不要走呀~好想听听你说话~" id="" cols="30"
         rows="10"></textarea>
       <div class="comment-submit">
-        <div class="svg-list">
-          <svg-icon @click="memeCuts(0)" iconName="icon-search" class="sous-icon" color="#000"></svg-icon>
-          <svg-icon @click="memeCuts(1)" iconName="icon-picture" class="img-icon" color="#000"></svg-icon>
-        </div>
-
+      
+          <div class="svg-list" v-if="store.theme">
+            <svg-icon @click="memeCuts(0)" iconName="icon-a-ziyuan123" class="sous-icon" ></svg-icon>
+            <svg-icon @click="memeCuts(1)" iconName="icon-picture" class="img-icon" color="#000"></svg-icon>
+          </div>
+          <div class="svg-list" v-else>
+            <svg-icon @click="memeCuts(0)" iconName="icon-a-ziyuan123" class="sous-icon" ></svg-icon>
+            <svg-icon @click="memeCuts(1)" iconName="icon-picture" class="img-icon" color="#fff"></svg-icon>
+          </div>
+ 
         <div class="com-submit" @click="Comment">
           <div class="submit-cancel" v-if="props.button" @click="emit('setShow')">
             取消
@@ -640,6 +809,30 @@ async function Comment() {
 
 
 <style scoped lang="scss">
+.label-user {
+
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 14px;
+  flex: 1;
+
+  border-radius: 0px 5px 5px 0px;
+  border: 1px solid rgba(144, 147, 153, 0.3137254902);
+  color: var(--main-color);
+  transition: 0.3s;
+}
+
+.dark {
+  transition: .3s;
+  box-shadow: 0 0px 10px var(--box-shadow2) !important;
+}
+
+.reply {
+  margin-bottom: 10px;
+  color: #999;
+}
+
 .imgUplod {
   >ul {
     display: flex;
@@ -717,18 +910,21 @@ async function Comment() {
   display: flex;
   padding-top: 10px;
   border-top: 1px solid var(--classC);
+  transition: .3s;
 
   li {
     padding: 5px;
-    color: var(--routine);
+    color: var(--main-color);
     transition: .3s;
     cursor: pointer;
+    text-align: center;
   }
 }
 
 .memeActive {
   background: var(--theme-color);
   color: #fff !important;
+  border-radius: 2px;
 }
 
 .meme {
@@ -751,6 +947,7 @@ async function Comment() {
     padding: 5px;
     cursor: pointer;
     transition: .3s;
+    color: var(--main-color);
 
     img {
       width: 33px;
@@ -785,7 +982,7 @@ async function Comment() {
     height: 130px;
     border: none;
     resize: none;
-    color: var(--routine);
+    color: var(--main-color);
     background: transparent;
     font-size: 15px;
   }
@@ -808,6 +1005,7 @@ async function Comment() {
       height: 32px;
       line-height: 32px;
       padding: 0 15px;
+      color: var(--main-color);
       transition: .3s;
     }
 
@@ -845,29 +1043,46 @@ async function Comment() {
 .com-user {
   display: flex;
   justify-content: space-between;
+
   align-items: center;
 
   .com-user-img {
-    width: 40px;
-    height: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    .identity {
+      white-space: nowrap;
+      color: #fff;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 10px;
+      background: var(--theme-color);
+      width: fit-content;
+      margin-top: 4px;
+      padding: 2px 4px;
+    }
+
+    
     border-radius: 50%;
- overflow: hidden;
+    // overflow: hidden;
+
     img {
-      width: 100%;
-      height: 100%;
-     
+      width: 40px;
+    height: 40px;
+      border-radius: 50%;
+
+
     }
   }
 
-
-
-
   ul {
+    flex: 1;
     display: flex;
 
 
     li {
       position: relative;
+      flex: 1;
     }
 
     .user-hint {
@@ -909,7 +1124,8 @@ async function Comment() {
         padding: 8px 1rem;
         border-radius: 5px 0px 0px 5px;
         background-color: rgba(144, 147, 153, 0.23);
-        color: var(--main);
+        color: var(--main-color);
+        transition: .3s;
         font-size: 15px;
       }
 
@@ -919,15 +1135,19 @@ async function Comment() {
         padding: 0 15px;
         border-radius: 0px 5px 5px 0px;
         border: 1px solid #90939950;
-        color: var(--routine);
+        color: var(--main-color);
+        transition: .3s;
         display: block;
         width: 100%;
         box-sizing: border-box
       }
     }
   }
-
 }
+
+
+
+
 
 //   .v-enter-from,
 // .v-leave-to {

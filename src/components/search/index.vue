@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { router } from "@/routers";
 import { ref, reactive } from "vue"
 
 const emit = defineEmits(['setShow']);
@@ -53,6 +54,26 @@ lableList = lableList.map(item => {
   }
 })
 
+let searcheVal=ref('')
+//搜索
+function searchTo(val:any){
+  if(val==""){
+    setShow()
+    router.push("/")
+    
+  }else{
+    setShow()
+       router.push({
+      path:`/search/${val}`,
+      state:{
+        data:"search"
+
+      }
+    })
+  }
+ 
+}
+
 </script>
 <template>
   <Transition>
@@ -70,8 +91,8 @@ lableList = lableList.map(item => {
           <span>关键字搜索</span>
         </div>
         <div class="keyword">
-          <input type="text" placeholder="请输入关键字">
-          <div>
+          <input type="text" placeholder="请输入关键字" v-model="searcheVal">
+          <div @click="searchTo(searcheVal)">
             搜索
           </div>
         </div>
@@ -139,7 +160,7 @@ lableList = lableList.map(item => {
     .hot-left {
       display: flex;
       align-items: center;
-      
+      color: var(--main-color);
       
       span:nth-child(2){
         display: block;
@@ -148,7 +169,7 @@ lableList = lableList.map(item => {
         white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: var(--routine);
+     
       font-size: 15px;
       }
 
@@ -172,7 +193,7 @@ lableList = lableList.map(item => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: var(--routine);
+      color: var(--main-color);
       text-align: right;
     }
 
@@ -223,17 +244,18 @@ lableList = lableList.map(item => {
   box-sizing: border-box;
   margin: 0 auto;
   padding: 80px 15% 10px 15%;
-  background: var(--background);
+  background: var(--sc-main);
 
   .search-title {
     display: flex;
     align-items: center;
+    color: var(--main-color);
 
     span {
       margin-left: 10px;
     }
 
-    color: var(--main);
+  
     padding: 15px 0;
     font-size: 15px;
   }

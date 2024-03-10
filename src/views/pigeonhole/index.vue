@@ -3,7 +3,8 @@ import  Huge from '@/components/hugescreen/index.vue'
 </script>
 <template>
   <div>
-       <Huge :img="'src/assets/images/1.jpg'" :title="'文档'"></Huge>
+       <!-- <Huge :img="'/public/images/2.jpg'" :title="'文档'"></Huge> -->
+       <router-view></router-view>
   </div>
 </template>
 

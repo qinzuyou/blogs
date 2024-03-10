@@ -57,6 +57,34 @@ export function logingUser(data:any){
 }
 
 
+//根据uid获取用户信息
+export function userInfo(uid:any){
+  return request({
+    url:'/t-user/userInfo',
+    method:'get',
+    params:{
+      uid:uid
+    }
+  })
+}
+
+//修改个人资料
+export function updateUser(data:any){
+  return request({
+    url:'/t-user/updateUser',
+    method: 'post',
+    data:data
+  })
+}
+//修改个人资料
+export function updatePassword(data:any){
+  return request({
+    url:'/t-user/updatePassword',
+    method: 'post',
+    data:data
+  })
+}
+
 
 
 

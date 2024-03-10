@@ -37,7 +37,7 @@ export function getArticleList(){
 
 
 
-//分页查询
+//文章分页查询
 export function getListPage(pn:any,sp:any){
   return request({
     url:'t-article/listPage',
@@ -49,7 +49,7 @@ export function getListPage(pn:any,sp:any){
   })
 }
 
-//根据id返回文章
+//根据文章id返回文章
 export function getArticleId(id:any){
   return request({
     url:`t-article/getArticleId/${id}`,
@@ -93,5 +93,172 @@ export function aidComment(aid:any){
   return request({
     url:`t-comment/aidComment/${aid}`,
     method:'get',
+  })
+}
+
+
+//下一篇
+
+export function articleNext(aid:any){
+  return request({
+      url:`t-article/articleNext/${aid}`,
+      methot:'get'
+  })
+}
+
+//上一篇
+export function articlePrevious(aid:any){
+  return request({
+      url:`t-article/articlePrevious/${aid}`,
+      methot:'get'
+  })
+}
+
+
+
+
+//添加标签
+export function addLabel(data:any){
+  return request({
+    url:`t-label/addLabel`,
+    method:'post',
+    data:data
+  })
+}
+
+//获取用户所有标签
+
+export function uidLabel(pages:any,size:any,uid:any){
+  return request({
+    url:"t-label/uidLabel",
+    params:{
+      pages:pages,
+      size:size,
+      uid:uid
+    }
+  })
+}
+
+//获取用户户所有文章获得的评论
+
+export function commentCount(pages:any,size:any,uid:any){
+  return request({
+    url:"t-comment/commentCount",
+    params:{
+      pages:pages,
+      size:size,
+      uid:uid
+    }
+  })
+}
+
+
+//根据用户id分页查询文章
+
+export function uidArticle(pages:any,size:any,uid:any,type=""){
+  return request({
+    url:"t-article/uidArticle",
+    params:{
+      pages:pages,
+      size:size,
+      uid:uid,
+      type:type
+    }
+  })
+}
+
+
+//增加阅读量
+export function addHits(aid:any){
+    return request({
+      url:"t-article/addHits",
+      params:{
+        aid:aid
+      }
+    })
+}
+
+
+//根据文章id获取评论数量
+export function aidCommentCount(pages:any,size:any, aid:any){
+  return request({
+    url:"t-comment/aidCommentCount",
+    params:{
+      pages:pages,
+      size:size,
+      aid:aid
+    }
+  })
+}
+
+//模糊查询
+export function searchArticle(pages:any,size:any,val:any){
+    return request({
+      url:"t-article/searchArticle",
+      params:{
+        pages:pages,
+        size:size,
+        val:val
+      }
+    })
+}
+
+
+//根据用户id获取文章类型数量
+export function uidAllType(uid:any=""){
+  return request({
+    url:"t-article-type/uidAllType",
+    method:'get',
+    params:{
+      uid:uid
+    }
+  })
+}
+
+
+
+//根据用户id获取文章类型数量
+export function uidAllLabel(uid:any=""){
+  return request({
+    url:"t-label/uidAllLabel",
+    method:'get',
+    params:{
+      uid:uid
+    }
+  })
+}
+
+
+//根据标签模糊查询
+export function labelArticle(pages:any,size:any,val:any){
+  return request({
+    url:"t-article/labelArticle",
+    params:{
+      pages:pages,
+      size:size,
+      val:val
+    }
+  })
+}
+
+//文章归档
+export function Stats(uid:any){
+  return request({
+    url:"t-article/Stats",
+    params:{
+      uid:uid
+    }
+  })
+}
+
+
+//文章归档
+export function recommend(re:any){
+  return request({
+    url:"t-article/recommend",
+    method:'get',
+    params:{
+      re:re
+    }
   })
 }

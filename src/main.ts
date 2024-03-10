@@ -20,6 +20,9 @@ import { createPinia } from 'pinia'
 import persist from 'pinia-plugin-persistedstate'
 
 
+//引入图片懒加载插件
+import Lazyload from "vue3-lazyload";
+
 
 
 //引入阿里云图标库
@@ -28,6 +31,13 @@ import  "@/assets/iconfont/iconfont.js";
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue'
 
 const app = createApp(App);
+
+
+// 注册插件
+app.use(Lazyload, {
+  loading: "/public/images/2.jpg",//可以指定加载中的图像
+  error: "/public/images/2.jpg",//可以指定加载失败的图像
+});
 
 // 实例化pinia
 const pinia = createPinia()

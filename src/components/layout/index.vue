@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from "vue-router";
 import { ref, reactive, onMounted, onUnmounted } from "vue";
+
 import Search from "@/components/search/index.vue"
+import Menu from "@/components/layout/menu.vue"
 const router = useRouter();
 const route = useRoute()
 console.log(router.options.routes);
@@ -18,6 +20,25 @@ function SearchCuts() {
   SearchCut.value = !SearchCut.value
 }
 
+//菜单栏
+let menuShow=ref(false)
+
+function menuShowCut(){
+  menuShow.value=!menuShow.value
+}
+
+
+//前往个人中心
+function toPersonal(uid:any){
+  router.push({
+    path:`/personal/${uid}`,
+    state:{
+      data:"user"
+    }
+  })
+}
+
+
 //导航列表点击样式控制
 let navActive = ref(-1)
 
@@ -32,13 +53,26 @@ const navPass = function (index: any) {
 }
 
 
-const navActiveC = function (index: any, index2: any) {
+const navActiveC = function (index: any, index2: any,path:any) {
+console.log(path);
 
+  pageCut(path)
   navActive.value = (index + index2)
   // console.log(navActive.value);
 
 
 }
+
+const navActiveC2 = function (index: any, index2: any,path:any) {
+console.log(path);
+
+  pageCut(path)
+  navActive.value = (index + index2)
+  // console.log(navActive.value);
+
+
+}
+
 
 
 let backTopFlag = ref(false)
@@ -113,22 +147,67 @@ function pageCut(path: any) {
       path: "/articleList/全部/"
     })
     return
+  }else if(path == "/tags/:type/"){
+    router.push({
+      path: "/tags/全部/"
+    })
+    return
+  }else if(path == "/classifications/:type/"){
+    router.push({
+      path: "/classifications/全部/"
+    })
+    return
+  }else if(path == "/pigeonhole"){
+    router.push({
+      path: "/classifications/全部/"
+    })
+    return
   }
 
-  router.push({
-    path: path
-  })
+  router.push(path)
 
 }
 
+//退出登录
+
+function userdelete(){
+      store.userdelete()
+      userin.value=false
+
+}
+
+
+
+//主题切换
+const handleThemeChange = (val: Boolean) => {
+  store.themeCut(val)
+
+  console.log(store.theme);
+  
+  if (!val) {
+    document.documentElement.setAttribute('theme', 'dark')
+  } else {
+    document.documentElement.removeAttribute('theme')
+  }
+}
 
 </script>
 
 <template>
   <div>
-    <header :class="{ 'nav-bg': navTran, 'header-bg': SearchCut }">
+    <Menu @set-show="menuShowCut" v-if="menuShow"></Menu>
+    <header :class="{ 'nav-bg': navTran, 'header-bg': SearchCut,'menu-show-bg':menuShow&&store.theme}">
       <nav class="blog-nav">
 
+        <div class="menu-icon" @click="menuShowCut">
+          <i class="mi-close">
+            <i :class="{'i-toggle':menuShow}"></i>
+            <i :class="{'i-toggle2':menuShow}"></i>
+            <i :class="{'i-toggle3':menuShow}"></i>
+          </i>
+
+          <!-- <svg-icon iconName="icon-search" class="sous-icon" color="#fff" ></svg-icon> -->
+        </div>
         <div class="nav-left">
 
 
@@ -136,36 +215,34 @@ function pageCut(path: any) {
             <img src="@/assets/images/1.jpg" alt="">
           </div>
           <ul class="nav-conter">
-            <!-- <li>
-
-                            <RouterLink to="/">
-                                <svg-icon iconName="icon-shouye1" class="sous-icon" color="#000"></svg-icon>
-                                首页
-                            </RouterLink>
-                        </li> -->
-            <!-- <li>
-
-                            <RouterLink to="/article"><svg-icon iconName="icon-shouye1" class="sous-icon"
-                                    color="#000"></svg-icon>
-                                文章列表
-                            </RouterLink>
-                        </li> -->
             <template v-for="(item, index) in navlist" :key="index">
-              <li class="blog-list" v-if="item.meta.show" @click="navActiveC(index, 0)" @mouseenter="navPass(index)"
+              <li class="blog-list" v-if="item.meta.show" @click.stop="navActiveC(index, 0,item.path)" @mouseenter="navPass(index)"
                 @mouseleave="down = -1">
-                <a @click="pageCut(item.path)" :class="{ 'active': navActive == index, 'nav-font': navTran }">
-                  <svg-icon iconName="icon-shouye1" class="sous-icon" color="#000"></svg-icon>
+                <a  :class="{ 'active': navActive == index, 'nav-font': navTran }">
+                  <svg-icon :iconName="item.meta.icon" class="sous-icon" color="#000"></svg-icon>
                   {{ item.meta.title }}
-                  <svg-icon iconName="icon-arrow-down" v-if="item.children" class="down-icon"
+                  <!-- (navTran&&store.theme)||(menuShow&&store.theme) -->
+                  <div v-if="store.theme">
+                     <svg-icon iconName="icon-arrow-down" v-if="item.children&&store.theme&&!navTran" class="down-icon"
                     :class="{ 'down-cut': down == index }" color="#fff"></svg-icon>
+                    <svg-icon iconName="icon-arrow-down" v-if="item.children&&store.theme&&navTran" class="down-icon"
+                    :class="{ 'down-cut': down == index }" color="#000"></svg-icon>
+                  </div>
+                  <div v-else>
+                    <svg-icon iconName="icon-arrow-down" v-if="item.children" class="down-icon"
+                    :class="{ 'down-cut': down == index }" color="#fff"></svg-icon>
+                  </div>
+                 
 
                 </a>
+
+            
                 <Transition name="swing">
                   <div class="blog-list-l" v-if="item.children && down == index">
                     <ul>
-                      <li :class="{ 'blog-list-active': navActive == (index + index2) }" @click.stop="navActiveC(index, index2)"
+                      <li :class="{ 'blog-list-active': navActive == (index + index2) }" @click.stop="navActiveC2(index, index2,item2.path)"
                         v-for="(item2, index2) in item.children" :key="index2">
-                        {{ item2.name }}
+                        {{ item2.meta.title }}
                       </li>
 
                     </ul>
@@ -177,30 +254,45 @@ function pageCut(path: any) {
           </ul>
         </div>
         <div class="nav-right">
-          <ul v-if="navTran">
+          <!-- <ul v-if="navTran">
             <li>
               <svg-icon iconName="icon-search" class="sous-icon" color="#000"></svg-icon>
             </li>
             <li>
               <svg-icon iconName="icon-user" class="sous-icon" color="#000"></svg-icon>
             </li>
-            <li>
-              <svg-icon iconName="icon-taiyang_sun61" class="sous-icon" color="#000"></svg-icon>
+            <li class="theme-box">
+              <transition mode="out-in">
+              <svg-icon iconName="icon-taiyang_sun61" class="sous-icon" color="#000" v-if="store.theme" @click="handleThemeChange(false)"></svg-icon>
+              <svg-icon iconName="icon-yueliangxingxing" class="sous-icon" color="#000" v-else @click="handleThemeChange(true)"></svg-icon>
+            </transition>
             </li>
-          </ul>
-          <ul v-else>
+          </ul> -->
+          <ul >
             <li @click="SearchCuts">
-              <svg-icon iconName="icon-search" class="sous-icon" color="#fff"></svg-icon>
+              <Transition mode="out-in">           
+              <svg-icon iconName="icon-search"  color="#000" v-if="(navTran&&store.theme)||(menuShow&&store.theme)"></svg-icon>
+              <svg-icon iconName="icon-search"  color="#fff" v-else></svg-icon>
+  </Transition>
             </li>
             <div class="user-login">
 
               <ul class="user-login-r" v-if="!store.user">
                 <li>
-                  <router-link to="/login">登录</router-link>
+            <router-link to="/login"> 
+<transition mode="out-in">
+              <svg-icon iconName="icon-user"  color="#000" v-if="(navTran&&store.theme)||(menuShow&&store.theme)"></svg-icon>
+              
+              <svg-icon iconName="icon-user"  color="#fff" v-else></svg-icon>
+</transition>
+            </router-link> 
+                </li>
+                <!-- <li>
+                  <router-link to="/login"> 登录</router-link>
                 </li>
                 <li>
                   <a> 注册</a>
-                </li>
+                </li> -->
               </ul>
 
               <div class="user-box" @mouseenter="uin" @mouseleave="uout" v-else>
@@ -235,7 +327,7 @@ function pageCut(path: any) {
                       </li>
                     </ul>
                     <ul class="user-out">
-                      <li>
+                      <li @click="toPersonal(store.user.uid)">
                         <div>
                           <svg-icon iconName="icon-yonghu" color="#00a2e3;"></svg-icon>
                         </div>
@@ -247,7 +339,7 @@ function pageCut(path: any) {
                         </div>
                         <p>发布文章</p>
                       </li>
-                      <li>
+                      <li @click="userdelete">
                         <div>
                           <svg-icon iconName="icon-login" color="#eb83cd"></svg-icon>
                         </div>
@@ -260,9 +352,23 @@ function pageCut(path: any) {
               </div>
 
             </div>
-            <li>
-              <svg-icon iconName="icon-taiyang_sun61" class="sous-icon" color="#fff"></svg-icon>
+            <transition mode="out-in">
+
+            <li class="theme-box" v-if="(navTran&&store.theme)||(menuShow&&store.theme)">
+              <transition mode="out-in">
+              <svg-icon iconName="icon-taiyang_sun61" class="sous-icon" color="#000" v-if="store.theme" @click="handleThemeChange(false)"></svg-icon>
+              <svg-icon iconName="icon-yueliangxingxing" class="sous-icon" color="#000" v-else @click="handleThemeChange(true)"></svg-icon>
+            </transition>
             </li>
+
+            <li class="theme-box" v-else>
+              <transition mode="out-in">
+              <svg-icon iconName="icon-taiyang_sun61" class="sous-icon" color="#fff" v-if="store.theme" @click="handleThemeChange(false)"></svg-icon>
+              <svg-icon iconName="icon-yueliangxingxing" class="sous-icon" color="#fff" v-else @click="handleThemeChange(true)"></svg-icon>
+            </transition>
+            </li>
+          </transition>
+
           </ul>
 
         </div>
@@ -288,6 +394,69 @@ function pageCut(path: any) {
 
 
 <style scoped lang="scss">
+.menu-show-bg{
+  background: #fff;
+}
+.i-toggle{
+  transform: rotate(-45deg);
+    // transform-origin: top right;
+  
+    // width: calc(1em + 1px) !important;
+    width: 16px !important;
+    margin-left: 2px !important;
+  
+}
+.i-toggle2{
+  display: none !important;
+
+}
+.i-toggle3{  transform: rotate(45deg);
+    transform-origin: bottom right;
+
+   margin-left: -1px;
+
+
+}
+
+.mi-close{
+  cursor: pointer;
+  i{
+    display: block;
+    width: 10px;
+    height: 2px;
+    border-radius:2px ;
+    background: var(--header-color);
+    transition: .3s;
+    
+
+  }
+  i:nth-child(1){
+    width: 12px;
+  }
+  i:nth-child(2){
+    margin-top: 4px;
+    width: 14px;
+  }
+  i:nth-child(3){
+    width: 16px;
+    margin-top: 4px;
+  }
+}
+.menu-icon{
+  display: none;
+  @media screen and (max-width: 1024px) {
+      display: block;
+  }
+}
+.sous-icon{
+  cursor: pointer;
+}
+
+.theme-box{
+  .svg-icon{
+    cursor: pointer;
+  }
+}
 .item-in-enter-active {
   -webkit-animation: fade-in-bottom 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
   animation: fade-in-bottom 0.6s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
@@ -411,7 +580,7 @@ function pageCut(path: any) {
 }
 
 .user-box {
-  img {
+img {
     width: 30px;
     height: 30px;
     border-radius: 30px;
@@ -470,6 +639,10 @@ function pageCut(path: any) {
 
 .user-login {
   padding: 0 20px;
+    @media screen and (max-width:1024px) {
+    display: none;
+  }
+
 }
 
 .user-login-r {
@@ -481,8 +654,8 @@ function pageCut(path: any) {
 
   }
 
-  li:nth-child(1) {
-    border-right: 1px solid #000;
+  .svg-icon{
+    font-size: 20px;
   }
 
   a {
@@ -501,6 +674,9 @@ function pageCut(path: any) {
 
 
 .go-back {
+  @media screen and (max-width:1024px) {
+    display: none;
+  }
   transition: .5s;
   position: fixed;
   right: 10px;
@@ -510,18 +686,24 @@ function pageCut(path: any) {
   flex-direction: column;
   align-items: center;
 
-  img {
-    transition: .5s;
-  }
+  
 
   img:nth-child(1) {
     width: 4px;
     height: 20px;
+    transition: .3s;
+    -webkit-backface-visibility: hidden;
+backface-visibility: hidden;
   }
 
+  img:nth-child(2){
+    transition: .3s;
+
+  }
   img:nth-child(2):hover {
     cursor: pointer;
     transform: scale(1.1, 1.1);
+
   }
 }
 
@@ -530,21 +712,21 @@ function pageCut(path: any) {
 }
 
 .nav-bg {
-  background: #fff !important;
+  background: var(--main-bg-color) !important;
 }
 
 .nav-font {
-  color: #000 !important;
+  color: var(--main-color)!important;
 
 }
 
 /* // 动画 */
 .swing-enter-active {
-  animation: swing-in-top-fwd 0.5s cubic-bezier(0.175, 0.885, 0.320, 1.275) both;
+  animation: swing-in-top-fwd 0.3s cubic-bezier(0.175, 0.885, 0.320, 1.275) both;
 }
 
 .swing-leave-active {
-  animation: swing-out-top-bck 0.45s cubic-bezier(0.600, -0.280, 0.735, 0.045) both;
+  animation: swing-out-top-bck 0.3s cubic-bezier(0.600, -0.280, 0.735, 0.045) both;
 }
 
 .header-bg {
@@ -557,25 +739,32 @@ header {
   left: 0;
   right: 0;
   max-width: 100%;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--header-bg-c);
+
   backdrop-filter: blur(2px);
   transition: .3s;
   box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.2);
 
   z-index: 20;
 
-
+  height: 60px;
 }
 
 .active {
-  color: var(--theme-color) !important;
+  // color: var(--theme-color) !important;
+  text-shadow: 0 0 4px #fff;
 }
 
 .blog-nav {
+
+  @media screen and (max-width:1024px) {
+    
+  }
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-
+  height: 60px;
 
   max-width: 96%;
   margin: 0 auto;
@@ -599,6 +788,10 @@ header {
     align-items: center;
 
     .nav-conter {
+      @media screen and (max-width: 1024px) {
+        transition: .3s;
+            display: none;
+    }
       display: flex;
 
       >li {
@@ -669,7 +862,11 @@ header {
       text-align: center;
       height: 40px;
       line-height: 40px;
-      transition: all .5s;
+      transition: .3s;
+    }
+    li:hover{
+      background: rgba($color: #000000, $alpha: 0.1);
+  color: var(--theme-color);
     }
   }
 }
@@ -677,6 +874,9 @@ header {
 .blog-list-active {
   background: rgba($color: #000000, $alpha: 0.1);
   color: var(--theme-color);
+}
+.nav-font{
+  color: #fff ;
 }
 
 .down-cut {
